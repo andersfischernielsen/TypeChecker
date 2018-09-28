@@ -13,4 +13,3 @@ function infer(environment: Environment, e: Expression): Type {
         default: throw Error("Unimplemented");
     }
 }
-
