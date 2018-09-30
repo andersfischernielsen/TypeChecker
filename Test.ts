@@ -70,3 +70,11 @@ console.log(
     },
     c("+", i(1), i(2)),
     )[0]);
+
+// console.log(
+//     infer({
+//         next: 0,
+//         env: initialEnv
+//     },
+//     c("+", "true", "false"),
+//     )[0]);

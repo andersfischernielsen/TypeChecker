@@ -72,7 +72,9 @@ function unify(t1: Type, t2: Type): Substitution {
         );
         return composeSubstitution(s1, s2);
     } else {
-        throw new Error(`Type mismatch:\n    Expected ${t1}\n    Found ${t2}`);
+        const first = (t1 as TNamed | TVar).name;
+        const second = (t2 as TNamed | TVar).name;
+        throw new Error("Type mismatch:\n    Expected " + first + "\n    Found " + second);
     }
 }
 
