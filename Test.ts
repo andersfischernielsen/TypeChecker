@@ -1,36 +1,72 @@
-// test = 2
-const exampleAssignment: Expression = {
-    type: "Int",
-    value: 2,
-};
+function v(name: string): Expression {
+    return {
+        type: "Var",
+        name: name
+    };
+}
 
-const exampleAssignmentEnvironment: Environment = {["test"]: { name: "test", type: "Var" }};
+function i(value: number): Expression {
+    return {
+        type: "Int",
+        value: value
+    };
+}
 
-// (x) => if (x) 2 else f(x)
-const exampleFunction = {
-    type: "Function",
-    parameter: "x",
-    body: {
-        type: "If",
-        condition: {
-            type: "Var",
-            name: "x",
-        },
-        true: {
-            type: "Int",
-            value: 2,
-        },
-        false: {
+function f(param: string, body: Expression | string): Expression {
+    return {
+        type: "Function",
+        parameter: param,
+        body: typeof body === "string" ? v(body) : body
+    };
+}
+
+function c(f: Expression | string, ..._args: (Expression | string)[]): Expression {
+    const args = _args.map(a => typeof a === "string" ? v(a) : a);
+    return args.reduce(
+        (func, arg) => ({
             type: "Call",
-            function: "f",
-            argument: {
-                type: "Var",
-                name: "x",
-            },
-        },
-    },
+            function: typeof func === "string" ? v(func) : func,
+            argument: typeof arg === "string" ? v(arg) : arg,
+        }),
+        typeof f === "string" ? v(f) : f
+    );
+}
+
+function tn(name: string): Type {
+    return {
+        type: "Named",
+        name,
+    };
+}
+function tv(name: string): Type {
+    return {
+        type: "Var",
+        name,
+    };
+}
+function tfunc(...types: Type[]): Type {
+    return types.reduceRight((to, from) => ({
+        type: "Function",
+        from,
+        to,
+    }));
+}
+
+const initialEnv = {
+    "true": tn("Bool"),
+    "false": tn("Bool"),
+    "!": tfunc(tn("Bool"), tn("Bool")),
+    "&&": tfunc(tn("Bool"), tn("Bool"), tn("Bool")),
+    "||": tfunc(tn("Bool"), tn("Bool"), tn("Bool")),
+    "Int==": tfunc(tv("Int"), tv("Int"), tv("Bool")),
+    "Bool==": tfunc(tv("Bool"), tv("Bool"), tv("Bool")),
+    "+": tfunc(tn("Int"), tn("Int"), tn("Int"))
 };
 
-const result = infer(exampleAssignmentEnvironment, exampleAssignment);
-// tslint:disable-next-line:no-console
-console.log(result);
+console.log(
+    infer({
+        next: 0,
+        env: initialEnv
+    },
+    c("+", i(1), i(2)),
+    )[0]);
